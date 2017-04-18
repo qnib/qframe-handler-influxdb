@@ -13,6 +13,7 @@ import (
 
 const (
 	version = "0.0.0"
+	pluginTyp = "handler"
 )
 
 type Plugin struct {
@@ -24,14 +25,14 @@ type Plugin struct {
 func New(qChan qtypes.QChan, cfg config.Config, name string) (Plugin, error) {
 	var err error
 	p := Plugin{
-		Plugin: qtypes.NewNamedPlugin(qChan, cfg, name, version),
+		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, name, version),
 	}
 	return p, err
 }
 
 // Connect creates a connection to InfluxDB
 func (p *Plugin) Connect() {
-	host, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.host", p.Name), "localhost")
+	host := p.CfgStringOr("host", "localhost")
 	port, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.port", p.Name), "8086")
 	username, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.username", p.Name), "root")
 	password, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.password", p.Name), "root")

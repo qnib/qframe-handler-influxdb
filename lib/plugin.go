@@ -2,7 +2,9 @@ package qframe_handler_influxdb
 
 import (
 	"strings"
+	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"github.com/zpatrick/go-config"
 	"github.com/influxdata/influxdb/client/v2"
@@ -97,7 +99,7 @@ func (p *Plugin) CreateDockerStatsPoints(cs qtypes.ContainerStats) (pt *client.P
 	return pt, err
 }
 
-func (p *Plugin) CreateDockerStatsMemory(cs qtypes.ContainerStats) (*client.Point) {
+func (p *Plugin) CreateDockerStatsMemory(cs qtypes.ContainerStats) (pt *client.Point, err error) {
 	// Create a point and add to batch
 	mTags := map[string]string{
 		"image_name": cs.Container.Image,
@@ -111,14 +113,14 @@ func (p *Plugin) CreateDockerStatsMemory(cs qtypes.ContainerStats) (*client.Poin
 		"usage": mStats.Usage,
 		"limit": mStats.Limit,
 	}
-	pt, err := client.NewPoint("memory", mTags, fields, mStats.Time)
+	pt, err = client.NewPoint("memory", mTags, fields, mStats.Time)
 	if err != nil {
 		p.Log("error", fmt.Sprintf("%v", err))
 	}
-	return pt
+	return
 }
 
-func (p *Plugin) CreateDockerStatsMemoryPercent(cs qtypes.ContainerStats) (*client.Point) {
+func (p *Plugin) CreateDockerStatsMemoryPercent(cs qtypes.ContainerStats) (pt *client.Point, err error) {
 	// Create a point and add to batch
 	mTags := map[string]string{
 		"image_name": cs.Container.Image,
@@ -127,15 +129,20 @@ func (p *Plugin) CreateDockerStatsMemoryPercent(cs qtypes.ContainerStats) (*clie
 		"container_cmd": cs.Container.Command,
 	}
 	mStats := qtypes.NewMemoryStats(cs.Stats)
+	if ! (reflect.TypeOf(mStats.UsageP).Kind() == reflect.Float64) || ! (reflect.TypeOf(mStats.TotalRssP).Kind() == reflect.Float64) {
+		msg := fmt.Sprintf("Non float64 value: UsageP:%v || TotalRssP:%v", mStats.UsageP, mStats.TotalRssP)
+		p.Log("error", msg)
+		return pt, errors.New(msg)
+	}
 	fields := map[string]interface{}{
 		"usage": mStats.UsageP,
 		"total_rss": mStats.TotalRssP,
 	}
-	pt, err := client.NewPoint("memory_percent", mTags, fields, mStats.Time)
+	pt, err = client.NewPoint("memory_percent", mTags, fields, mStats.Time)
 	if err != nil {
 		p.Log("error", fmt.Sprintf("%v", err))
 	}
-	return pt
+	return
 }
 
 
@@ -188,11 +195,22 @@ func (p *Plugin) Run() {
 			switch qm.Data.(type){
 			case qtypes.ContainerStats:
 				cs := qm.Data.(qtypes.ContainerStats)
-				pt, _ := p.CreateDockerStatsPoints(cs)
-				bp.AddPoint(pt)
-				//bp.AddPoint(p.CreateDockerStatsMemory(cs))
-				bp.AddPoint(p.CreateDockerStatsMemoryPercent(cs))
+				pt, err := p.CreateDockerStatsPoints(cs)
+				if err == nil {
+					bp.AddPoint(pt)
+				}
+				pt, err = p.CreateDockerStatsMemoryPercent(cs)
+				if err == nil {
+					bp.AddPoint(pt)
+				}
+				pt, err = p.CreateDockerStatsMemory(cs)
+				if err == nil {
+					bp.AddPoint(pt)
+				}
 				bp = p.WriteBatch(bp)
+			case qtypes.Metric:
+				m := qm.Data.(qtypes.Metric)
+				_ = m
 			}
 		}
 	}

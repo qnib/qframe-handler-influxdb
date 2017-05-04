@@ -1,26 +1,70 @@
 # qframe-handler-influxdb
 Influxdb handler for qframe ETL-framework 
 
+## Start DEV environment
+
+The `docker-compose.yml` file expects to find some golang libs, so you better prepare.
 
 ```bash
-$ docker run -ti --name qframe-filter-docker-stats --rm -e SKIP_ENTRYPOINTS=1 \
-             -v ${GOPATH}/src/github.com/qnib/qframe-collector-docker-events:/usr/local/src/github.com/qnib/qframe-collector-docker-events \
-             -v ${GOPATH}/src/github.com/qnib/qframe-collector-docker-stats:/usr/local/src/github.com/qnib/qframe-collector-docker-stats \
-             -v ${GOPATH}/src/github.com/qnib/qframe-filter-docker-stats:/usr/local/src/github.com/qnib/qframe-filter-docker-stats \
-             -v ${GOPATH}/src/github.com/qnib/qframe-handler-influxdb:/usr/local/src/github.com/qnib/qframe-handler-influxdb \
-             -v ${GOPATH}/src/github.com/qnib/qframe-types:/usr/local/src/github.com/qnib/qframe-types \
-             -v ${GOPATH}/src/github.com/qnib/qframe-utils:/usr/local/src/github.com/qnib/qframe-utils \
-             -v /var/run/docker.sock:/var/run/docker.sock \
-             -w /usr/local/src/github.com/qnib/qframe-handler-influxdb \
-              qnib/uplain-golang bash
-$ govendor update github.com/qnib/qframe-collector-docker-events/lib \
-                  github.com/qnib/qframe-collector-docker-stats/lib \
-                  github.com/qnib/qframe-filter-docker-stats/lib \
-                  github.com/qnib/qframe-handler-influxdb/lib \
-                  github.com/qnib/qframe-types \
-                  github.com/qnib/qframe-utils
-$ govendor fetch +m
+$ go get github.com/qnib/qframe-collector-docker-events \
+         github.com/qnib/qframe-collector-docker-stats \
+         github.com/qnib/qframe-filter-docker-stats \
+         github.com/qnib/qframe-handler-influxdb \
+         github.com/qnib/qframe-types \
+         github.com/qnib/qframe-utils
 ```
+
+Fire up the services.
+
+```bash
+$ docker stack deploy -c docker-compose.yml qframe                                                                                                                                                  git:(master|✚1…
+Creating service qframe_influxdb
+Creating service qframe_frontend
+Creating service qframe_qframe-dev
+Creating service qframe_qframe
+```
+
+The `qframe-dev` task will run two scripts to update and fetch missing libraries, depending on your internet connection it might take a while.
+
+```bash
+$ docker logs -f $(docker ps -qlf label=com.docker.swarm.service.name=qframe_qframe-dev)                                                                                                                git:(master|✚2…
+[II] qnib/init-plain script v0.4.19
+> execute entrypoint '/opt/qnib/entry/00-govendor-update.sh'
++ govendor update github.com/qnib/qframe-collector-docker-events/lib github.com/qnib/qframe-collector-docker-stats/lib github.com/qnib/qframe-filter-docker-stats/lib github.com/qnib/qframe-handler-influxdb/lib github.com/qnib/qframe-types github.com/qnib/qframe-utils
+> execute entrypoint '/opt/qnib/entry/10-govendor-fetch.sh'
++ govendor fetch +m
+```
+once it shows `> execute CMD 'wait.sh'` it is up and running.
+
+```bash
+$ docker exec -ti $(docker ps -qlf label=com.docker.swarm.service.name=qframe_qframe-dev) bash                                                                                                          git:(master|✚2…
+root@383a9131f99b:/usr/local/src/github.com/qnib/qframe-handler-influxdb# go run main.go
+2017/05/04 19:47:48 [II] Dispatch broadcast for Back, Data and Tick
+2017/05/04 19:47:48 [  INFO] influxdb >> Start log handler influxdbv0.0.2
+2017/05/04 19:47:48 [  INFO] influxdb >> Established connection to 'http://172.17.0.1:8086
+2017/05/04 19:47:48 [  INFO] container-stats >> Start docker-stats filter v0.1.0
+2017/05/04 19:47:48 [  INFO] container-stats >> [docker-stats]
+2017/05/04 19:47:48 [  INFO] docker-events >> Start docker-events collector v0.2.1
+2017/05/04 19:47:48 [  INFO] docker-events >> Connected to 'moby' / v'17.05.0-ce-rc1'
+2017/05/04 19:47:49 [  INFO] docker-stats >> Connected to 'moby' / v'17.05.0-ce-rc1' (SWARM: active)
+2017/05/04 19:47:49 [  INFO] docker-stats >> Currently running containers: 3
+2017/05/04 19:47:49 [II] Start listener for: 'qframe_qframe.1.rpelk522jkavcez87qss4lckc' [383a9131f99bbe1872aa112d045b4d64a0990a8d588a3164e44c920ead39330c]
+2017/05/04 19:47:49 [II] Start listener for: 'qframe_frontend.1.2xuwmen72eor9gids5iguuahc' [c128e1acfda824058feb2227368c2d612eb58ab2c4370b340f875cd6394d9138]
+2017/05/04 19:47:49 [II] Start listener for: 'qframe_influxdb.1.u3lnhbnqrzukzzk7v1a27us87' [231e6c50eb683153afcd48bfeeb3111aef1b5b4d6d867d088d84de66bee3b301]
+2017/05/04 19:47:51 [  INFO] influxdb >> Ticker: Write batch of 45
+2017/05/04 19:47:54 [  INFO] influxdb >> Ticker: Write batch of 45
+...
+```
+
+### Develop
+
+To develop on one of the dependencies or the plugin itself, just change the code and update govendor.
+
+```bash
+$ 
+```
+
+# Run prepackaged container
 
 ```bash
 $ docker run -ti -v /var/run/docker.sock:/var/run/docker.sock qnib/qframe-handler-influxdb

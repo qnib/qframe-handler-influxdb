@@ -1,16 +1,12 @@
 package qframe_handler_influxdb
 
 import (
-	"strings"
-	"errors"
 	"fmt"
-	"reflect"
-	"strconv"
+	"time"
 	"github.com/zpatrick/go-config"
 	"github.com/influxdata/influxdb/client/v2"
 
 	"github.com/qnib/qframe-types"
-	"github.com/qnib/qframe-utils"
 )
 
 const (
@@ -53,6 +49,7 @@ func (p *Plugin) Connect() {
 	}
 }
 
+/*
 func (p *Plugin) CreatePoint(qm qtypes.QMsg) (*client.Point, error) {
 	// Create a point and add to batch
 	mName := qm.KV["name"]
@@ -76,7 +73,6 @@ func (p *Plugin) CreatePoint(qm qtypes.QMsg) (*client.Point, error) {
 	}
 	return pt, err
 }
-
 
 func (p *Plugin) CreateDockerStatsPoints(cs qtypes.ContainerStats) (pt *client.Point, err error) {
 	// Create a point and add to batch
@@ -144,11 +140,11 @@ func (p *Plugin) CreateDockerStatsMemoryPercent(cs qtypes.ContainerStats) (pt *c
 	}
 	return
 }
-
+*/
 
 func (p *Plugin) NewBatchPoints() client.BatchPoints {
-	dbName, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.database", p.Name), "qwatch")
-	dbPrec, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.precision", p.Name), "s")
+	dbName := p.CfgStringOr("database", "qframe")
+	dbPrec := p.CfgStringOr("precision", "s")
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  dbName,
 		Precision: dbPrec,
@@ -168,50 +164,80 @@ func (p *Plugin) WriteBatch(points client.BatchPoints) client.BatchPoints {
 	return p.NewBatchPoints()
 }
 
+func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err error) {
+	fields := map[string]interface{}{
+		"value": m.Value,
+	}
+	pt, err = client.NewPoint(m.Name, m.Dimensions, fields, m.Time)
+	return
+}
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
 	p.Log("info", fmt.Sprintf("Start log handler %sv%s", p.Name, version))
+	batchSize := p.CfgIntOr("batch-size", 100)
+	tick := p.CfgIntOr("ticker-sec", 1)
+
 	p.Connect()
 	bg := p.QChan.Data.Join()
-	inStr, err := p.Cfg.String(fmt.Sprintf("handler.%s.inputs", p.Name))
-	if err != nil {
-		inStr = ""
-	}
-	inputs := strings.Split(inStr, ",")
-	srcSuccess, err := p.Cfg.BoolOr(fmt.Sprintf("handler.%s.source-success", p.Name), true)
+	inputs := p.GetInputs()
+	//srcSuccess, err := p.Cfg.BoolOr(fmt.Sprintf("handler.%s.source-success", p.Name), true)
 	// Create a new point batch
 	bp := p.NewBatchPoints()
+	tickChan := time.NewTicker(time.Duration(tick)*time.Second).C
+	skipTicker := false
 	for {
-		val := bg.Recv()
-		switch val.(type) {
-		case qtypes.QMsg:
-			qm := val.(qtypes.QMsg)
-			if len(inputs) != 0 && ! qutils.IsInput(inputs, qm.Source) {
-				continue
-			}
-			if qm.SourceSuccess != srcSuccess {
-				continue
-			}
-			switch qm.Data.(type){
-			case qtypes.ContainerStats:
-				cs := qm.Data.(qtypes.ContainerStats)
-				pt, err := p.CreateDockerStatsPoints(cs)
-				if err == nil {
-					bp.AddPoint(pt)
+		select {
+		case val := <-bg.Read:
+			switch val.(type) {
+			/*case qtypes.QMsg:
+				qm := val.(qtypes.QMsg)
+				if len(inputs) != 0 && ! qutils.IsInput(inputs, qm.Source) {
+					continue
 				}
-				pt, err = p.CreateDockerStatsMemoryPercent(cs)
-				if err == nil {
-					bp.AddPoint(pt)
+				if qm.SourceSuccess != srcSuccess {
+					continue
 				}
-				pt, err = p.CreateDockerStatsMemory(cs)
-				if err == nil {
-					bp.AddPoint(pt)
+				switch qm.Data.(type){
+				case qtypes.ContainerStats:
+					cs := qm.Data.(qtypes.ContainerStats)
+					pt, err := p.CreateDockerStatsPoints(cs)
+					if err == nil {
+						bp.AddPoint(pt)
+					}
+					pt, err = p.CreateDockerStatsMemoryPercent(cs)
+					if err == nil {
+						bp.AddPoint(pt)
+					}
+					pt, err = p.CreateDockerStatsMemory(cs)
+					if err == nil {
+						bp.AddPoint(pt)
+					}
+					bp = p.WriteBatch(bp)
 				}
-				bp = p.WriteBatch(bp)
+			*/
 			case qtypes.Metric:
-				m := qm.Data.(qtypes.Metric)
-				_ = m
+				m := val.(qtypes.Metric)
+				pt, err := p.MetricsToBatchPoint(m)
+				if err != nil {
+					p.Log("error", fmt.Sprintf("%v", err))
+					continue
+				}
+				bp.AddPoint(pt)
+				if ! m.InputsMatch(inputs) {
+					continue
+				}
+				if len(bp.Points()) >= batchSize {
+					p.Log("info", fmt.Sprintf("Write batch of %d",len(bp.Points())))
+					bp = p.WriteBatch(bp)
+					skipTicker = true
+				}
 			}
+		case <- tickChan:
+			if ! skipTicker {
+				p.Log("info", fmt.Sprintf("Ticker: Write batch of %d",len(bp.Points())))
+				bp = p.WriteBatch(bp)
+			}
+			skipTicker = false
 		}
 	}
 }

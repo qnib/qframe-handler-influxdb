@@ -23,6 +23,8 @@ services:
     image: qnib/uplain-golang
     command: wait.sh
     working_dir: /usr/local/src/github.com/qnib/qframe-handler-influxdb
+    #environment:
+    #  - SKIP_ENTRYPOINTS=true
     volumes:
       - ${GOPATH}/src/github.com/qnib/qframe-collector-docker-events:/usr/local/src/github.com/qnib/qframe-collector-docker-events
       - ${GOPATH}/src/github.com/qnib/qframe-collector-docker-stats:/usr/local/src/github.com/qnib/qframe-collector-docker-stats

@@ -291,6 +291,12 @@
 			"revisionTime": "2017-05-04T18:36:22Z"
 		},
 		{
+			"checksumSHA1": "GCH8D+wMS96V0PJ6fPecWPbkbXc=",
+			"path": "github.com/elastic/beats/libbeat/common/match",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
 			"checksumSHA1": "05w0OxJYuC5GWJa+sujrW7YGk80=",
 			"path": "github.com/elastic/beats/libbeat/logp",
 			"revision": "05024bf096e2c5f5992c7eb9363a0b41fe99892a",
@@ -307,6 +313,54 @@
 			"path": "github.com/elastic/beats/libbeat/paths",
 			"revision": "05024bf096e2c5f5992c7eb9363a0b41fe99892a",
 			"revisionTime": "2017-05-04T18:36:22Z"
+		},
+		{
+			"checksumSHA1": "exsokVRNBBYrCZsEM7XR+mAdOvA=",
+			"path": "github.com/elastic/beats/libbeat/plugin",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "raysuHLnmmV+gFieqXPfTHyIZUc=",
+			"path": "github.com/elastic/beats/libbeat/processors",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "bazrvlA2I02GsyAJ2eNF4PCRscg=",
+			"path": "github.com/elastic/beats/metricbeat/mb",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "c2i8GzVfLSopNzBEVOo9LIe3Dnk=",
+			"path": "github.com/elastic/beats/metricbeat/mb/parse",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "L7KfhFkIFpfwmTzeY9Ll4ONDBoY=",
+			"path": "github.com/elastic/beats/metricbeat/module/haproxy",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "NZDxuT2jN5q9g+MzL0Q1iMgeOFs=",
+			"path": "github.com/elastic/beats/metricbeat/module/haproxy/stat",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "rmAFQohgglOjGvC8hatvSmT7vMY=",
+			"path": "github.com/elastic/beats/metricbeat/schema",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
+		},
+		{
+			"checksumSHA1": "WGpnibYUBnyPj7ED4A0e6J5ps3g=",
+			"path": "github.com/elastic/beats/metricbeat/schema/mapstrstr",
+			"revision": "1b2d67afd23f52274ec20c5c487a49074ffb7a69",
+			"revisionTime": "2017-05-05T12:36:17Z"
 		},
 		{
 			"checksumSHA1": "6UaJp3hUpEJvcu7COoRNhHPlqfg=",
@@ -363,6 +417,12 @@
 			"revisionTime": "2017-03-28T15:39:02Z"
 		},
 		{
+			"checksumSHA1": "Edty28OJHmXwaW6p58Jv/r2+6No=",
+			"path": "github.com/gocarina/gocsv",
+			"revision": "8482024e82190b03424659d74aad4769724af73e",
+			"revisionTime": "2017-04-18T09:09:34Z"
+		},
+		{
 			"checksumSHA1": "zodCK6AG5/I4EcNPTma0cRFls1k=",
 			"path": "github.com/grafov/bcast",
 			"revision": "15c6a671b975da343a7b04bba6e330e7dc4904b9",
@@ -391,6 +451,18 @@
 			"path": "github.com/influxdata/influxdb/pkg/escape",
 			"revision": "23af70add4a53f38584959747cf0df4168d86014",
 			"revisionTime": "2017-05-04T17:08:11Z"
+		},
+		{
+			"checksumSHA1": "l9wW52CYGbmO/NGwYZ/Op2QTmaA=",
+			"path": "github.com/joeshaw/multierror",
+			"revision": "69b34d4ec901851247ae7e77d33909caf9df99ed",
+			"revisionTime": "2014-01-24T17:37:10Z"
+		},
+		{
+			"checksumSHA1": "c1JIqjo91nD1RMFImnW69n8jtj8=",
+			"path": "github.com/mitchellh/mapstructure",
+			"revision": "cc8532a8e9a55ea36402aa21efdf403a60d34096",
+			"revisionTime": "2017-04-22T00:02:51Z"
 		},
 		{
 			"checksumSHA1": "jON6hYKx324X52zhxthe6d3oq/s=",
@@ -483,16 +555,16 @@
 			"revisionTime": "2017-05-04T17:00:19Z"
 		},
 		{
-			"checksumSHA1": "XvqmUOwMt8o3FZzb/qu7kP/MuBI=",
+			"checksumSHA1": "cyTwDT/I5BWx289MZZ3ZceL/rR8=",
 			"path": "github.com/qnib/qframe-filter-docker-stats/lib",
-			"revision": "f739a012288b3846a32b49abed6e745e6db673b3",
-			"revisionTime": "2017-05-04T17:00:19Z"
+			"revision": "c3bad0affb07f7a5e935085eaf9c9e70e5c6bb40",
+			"revisionTime": "2017-05-05T15:42:49Z"
 		},
 		{
 			"checksumSHA1": "8Lyw+8GYQUavwyB44yr9wrqxXrY=",
 			"path": "github.com/qnib/qframe-handler-influxdb/lib",
-			"revision": "980b2e677a90039d5c761426b1ff066fe9f5ff1d",
-			"revisionTime": "2017-05-04T20:51:51Z"
+			"revision": "101efff7ea832b92592b0c61673e2d8530daa73d",
+			"revisionTime": "2017-05-05T15:41:51Z"
 		},
 		{
 			"checksumSHA1": "Ib8aEI91q80OYljWyMT2aUmPXRk=",
@@ -501,10 +573,10 @@
 			"revisionTime": "2017-04-30T17:47:35Z"
 		},
 		{
-			"checksumSHA1": "HT18T2+pcSR5+ZMwhmv6PW1I3uA=",
+			"checksumSHA1": "kWpH7bF+AqPI/oYxUw3liyNE1+Y=",
 			"path": "github.com/qnib/qframe-types",
-			"revision": "763b21ee1a09fcae45ef791c3f1f5e27bfc25f1c",
-			"revisionTime": "2017-05-05T15:20:30Z"
+			"revision": "5d231a89251f1e7af259443ea60294b5fef58e6d",
+			"revisionTime": "2017-05-05T15:53:03Z"
 		},
 		{
 			"checksumSHA1": "cXF2ScH6MC6Y3rijJx6usaA1prY=",

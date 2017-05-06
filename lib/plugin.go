@@ -17,6 +17,7 @@ const (
 type Plugin struct {
     qtypes.Plugin
 	cli client.Client
+	metricCount int
 
 }
 
@@ -24,6 +25,7 @@ func New(qChan qtypes.QChan, cfg config.Config, name string) (Plugin, error) {
 	var err error
 	p := Plugin{
 		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, name, version),
+		metricCount: 0,
 	}
 	return p, err
 }
@@ -48,99 +50,6 @@ func (p *Plugin) Connect() {
 		p.Log("info", fmt.Sprintf("Established connection to '%s", addr))
 	}
 }
-
-/*
-func (p *Plugin) CreatePoint(qm qtypes.QMsg) (*client.Point, error) {
-	// Create a point and add to batch
-	mName := qm.KV["name"]
-	mValue := qm.KV["value"]
-	mTags := map[string]string{}
-	if val, ok := qm.KV["tags"] ; ok {
-		for _, pair := range strings.Split(val, ",") {
-			list := strings.Split(pair, "=")
-			if len(list) == 2 {
-				mTags[list[0]] = list[1]
-			}
-		}
-	}
-	val, _ := strconv.ParseFloat(mValue, 64)
-	fields := map[string]interface{}{
-		"value": val,
-	}
-	pt, err := client.NewPoint(mName, mTags, fields, qm.Time)
-	if err != nil {
-		p.Log("error", fmt.Sprintf("%v", err))
-	}
-	return pt, err
-}
-
-func (p *Plugin) CreateDockerStatsPoints(cs qtypes.ContainerStats) (pt *client.Point, err error) {
-	// Create a point and add to batch
-	mTags := map[string]string{
-		"image_name": cs.Container.Image,
-		"container_id": cs.Container.ID,
-		"container_name": strings.TrimPrefix(cs.Container.Names[0], "/"),
-		"container_cmd": cs.Container.Command,
-	}
-	cStats := qtypes.NewCPUStats(cs.Stats)
-	fields := map[string]interface{}{
-		"user": cStats.UsageInUsermodePercentage,
-		"kernel": cStats.UsageInKernelmodePercentage,
-		"system": cStats.SystemUsagePercentage,
-	}
-	pt, err = client.NewPoint("cpu_percent", mTags, fields, cStats.Time)
-	if err != nil {
-		p.Log("error", fmt.Sprintf("%v", err))
-	}
-	return pt, err
-}
-
-func (p *Plugin) CreateDockerStatsMemory(cs qtypes.ContainerStats) (pt *client.Point, err error) {
-	// Create a point and add to batch
-	mTags := map[string]string{
-		"image_name": cs.Container.Image,
-		"container_id": cs.Container.ID,
-		"container_name": strings.TrimPrefix(cs.Container.Names[0], "/"),
-		"container_cmd": cs.Container.Command,
-	}
-	mStats := qtypes.NewMemoryStats(cs.Stats)
-	fields := map[string]interface{}{
-		"total_rss": mStats.TotalRss,
-		"usage": mStats.Usage,
-		"limit": mStats.Limit,
-	}
-	pt, err = client.NewPoint("memory", mTags, fields, mStats.Time)
-	if err != nil {
-		p.Log("error", fmt.Sprintf("%v", err))
-	}
-	return
-}
-
-func (p *Plugin) CreateDockerStatsMemoryPercent(cs qtypes.ContainerStats) (pt *client.Point, err error) {
-	// Create a point and add to batch
-	mTags := map[string]string{
-		"image_name": cs.Container.Image,
-		"container_id": cs.Container.ID,
-		"container_name": strings.TrimPrefix(cs.Container.Names[0], "/"),
-		"container_cmd": cs.Container.Command,
-	}
-	mStats := qtypes.NewMemoryStats(cs.Stats)
-	if ! (reflect.TypeOf(mStats.UsageP).Kind() == reflect.Float64) || ! (reflect.TypeOf(mStats.TotalRssP).Kind() == reflect.Float64) {
-		msg := fmt.Sprintf("Non float64 value: UsageP:%v || TotalRssP:%v", mStats.UsageP, mStats.TotalRssP)
-		p.Log("error", msg)
-		return pt, errors.New(msg)
-	}
-	fields := map[string]interface{}{
-		"usage": mStats.UsageP,
-		"total_rss": mStats.TotalRssP,
-	}
-	pt, err = client.NewPoint("memory_percent", mTags, fields, mStats.Time)
-	if err != nil {
-		p.Log("error", fmt.Sprintf("%v", err))
-	}
-	return
-}
-*/
 
 func (p *Plugin) NewBatchPoints() client.BatchPoints {
 	dbName := p.CfgStringOr("database", "qframe")
@@ -185,36 +94,14 @@ func (p *Plugin) Run() {
 	bp := p.NewBatchPoints()
 	tickChan := time.NewTicker(time.Duration(tick)*time.Second).C
 	skipTicker := false
+	dims := map[string]string{
+		"version": version,
+		"plugin": p.Name,
+	}
 	for {
 		select {
 		case val := <-bg.Read:
 			switch val.(type) {
-			/*case qtypes.QMsg:
-				qm := val.(qtypes.QMsg)
-				if len(inputs) != 0 && ! qutils.IsInput(inputs, qm.Source) {
-					continue
-				}
-				if qm.SourceSuccess != srcSuccess {
-					continue
-				}
-				switch qm.Data.(type){
-				case qtypes.ContainerStats:
-					cs := qm.Data.(qtypes.ContainerStats)
-					pt, err := p.CreateDockerStatsPoints(cs)
-					if err == nil {
-						bp.AddPoint(pt)
-					}
-					pt, err = p.CreateDockerStatsMemoryPercent(cs)
-					if err == nil {
-						bp.AddPoint(pt)
-					}
-					pt, err = p.CreateDockerStatsMemory(cs)
-					if err == nil {
-						bp.AddPoint(pt)
-					}
-					bp = p.WriteBatch(bp)
-				}
-			*/
 			case qtypes.Metric:
 				m := val.(qtypes.Metric)
 				pt, err := p.MetricsToBatchPoint(m)
@@ -226,18 +113,26 @@ func (p *Plugin) Run() {
 				if ! m.InputsMatch(inputs) {
 					continue
 				}
+
 				if len(bp.Points()) >= batchSize {
-					p.Log("info", fmt.Sprintf("Write batch of %d",len(bp.Points())))
+					bLen := len(bp.Points())
+					p.Log("debug", fmt.Sprintf("Write batch of %d",bLen))
+					p.metricCount += bLen
+					p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
 					bp = p.WriteBatch(bp)
 					skipTicker = true
 				}
 			}
 		case <- tickChan:
 			if ! skipTicker {
-				p.Log("info", fmt.Sprintf("Ticker: Write batch of %d",len(bp.Points())))
+				bLen := len(bp.Points())
+				p.Log("debug", fmt.Sprintf("Ticker: Write batch of %d",bLen))
+				p.metricCount += bLen
 				bp = p.WriteBatch(bp)
+				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
 			}
 			skipTicker = false
+			p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.count", qtypes.Counter, float64(p.metricCount), dims, time.Now(), false))
 		}
 	}
 }

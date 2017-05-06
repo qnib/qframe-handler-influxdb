@@ -10,6 +10,7 @@ import (
 	"github.com/qnib/qframe-filter-docker-stats/lib"
 	"github.com/qnib/qframe-collector-docker-events/lib"
 	"github.com/qnib/qframe-collector-docker-stats/lib"
+	"github.com/qnib/qframe-collector-internal/lib"
 )
 
 func Run(qChan qtypes.QChan, cfg config.Config, name string) {
@@ -23,7 +24,7 @@ func main() {
 	cfgMap := map[string]string{
 		"handler.influxdb.database": "qframe",
 		"handler.influxdb.host": "172.17.0.1",
-		"handler.influxdb.inputs": "container-stats",
+		"handler.influxdb.inputs": "internal,container-stats",
 		"handler.influxdb.pattern": "%{INT:number}",
 		"handler.influxdb.ticker-sec": "5",
 		"handler.influxdb.batch-size": "500",
@@ -64,6 +65,12 @@ func main() {
 		return
 	}
 	go pds.Run()
+	pci, err := qframe_collector_internal.New(qChan, *cfg, "internal")
+	if err != nil {
+		log.Printf("[EE] Failed to internal collector: %v", err)
+		return
+	}
+	go pci.Run()
 	dc := qChan.Data.Join()
 	for {
 		select {

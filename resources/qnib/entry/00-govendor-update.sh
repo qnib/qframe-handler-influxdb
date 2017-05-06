@@ -3,6 +3,7 @@ set -x
 
 govendor update github.com/qnib/qframe-collector-docker-events/lib \
                 github.com/qnib/qframe-collector-docker-stats/lib \
+                github.com/qnib/qframe-collector-internal/lib \
                 github.com/qnib/qframe-filter-docker-stats/lib \
                 github.com/qnib/qframe-handler-influxdb/lib \
                 github.com/qnib/qframe-types \

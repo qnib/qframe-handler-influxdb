@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"fmt"
+	"os"
 
 	"github.com/zpatrick/go-config"
 	"github.com/qnib/qframe-types"
@@ -16,6 +17,13 @@ import (
 func Run(qChan qtypes.QChan, cfg config.Config, name string) {
 	p, _ := qframe_handler_influxdb.New(qChan, cfg, name)
 	p.Run()
+}
+
+func check_err(pname string, err error) {
+	if err != nil {
+		log.Printf("[EE] Failed to create %s plugin: %s", pname, err.Error())
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -38,38 +46,24 @@ func main() {
 			config.NewStatic(cfgMap),
 		},
 	)
+	// Start handler
 	phi, err := qframe_handler_influxdb.New(qChan, *cfg, "influxdb")
-	if err != nil {
-		log.Printf("[EE] Failed to create filter: %v", err)
-		return
-	}
+	check_err(phi.Name, err)
 	go phi.Run()
 	// Start filter
 	pfc, err := qframe_filter_docker_stats.New(qChan, *cfg, "container-stats")
-	if err != nil {
-		log.Printf("[EE] Failed to docker-stats filter: %v", err)
-		return
-	}
+	check_err(pfc.Name, err)
 	go pfc.Run()
 	// start docker-events
 	pe, err := qframe_collector_docker_events.New(qChan, *cfg, "docker-events")
-	if err != nil {
-		log.Printf("[EE] Failed to docker-event collector: %v", err)
-		return
-	}
+	check_err(pe.Name, err)
 	go pe.Run()
 	// start docker-stats
 	pds, err := qframe_collector_docker_stats.New(qChan, *cfg, "docker-stats")
-	if err != nil {
-		log.Printf("[EE] Failed to docker-stats collector: %v", err)
-		return
-	}
+	check_err(pds.Name, err)
 	go pds.Run()
 	pci, err := qframe_collector_internal.New(qChan, *cfg, "internal")
-	if err != nil {
-		log.Printf("[EE] Failed to internal collector: %v", err)
-		return
-	}
+	check_err(pci.Name, err)
 	go pci.Run()
 	dc := qChan.Data.Join()
 	for {

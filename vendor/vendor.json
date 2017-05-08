@@ -489,10 +489,10 @@
 			"revisionTime": "2017-05-05T21:22:35Z"
 		},
 		{
-			"checksumSHA1": "0pB9q9VSeot3vLR1eOpIprSKRA4=",
+			"checksumSHA1": "IUX7/+AMvJmNldMs2b+MVIcm7T4=",
 			"path": "github.com/qnib/qframe-handler-influxdb/lib",
-			"revision": "089c662b88769ae31c2f8903f25cf21c17b348f3",
-			"revisionTime": "2017-05-06T18:46:46Z"
+			"revision": "d6eb6542be89609f7e8b042814e1721572d8badb",
+			"revisionTime": "2017-05-08T11:54:20Z"
 		},
 		{
 			"checksumSHA1": "Ib8aEI91q80OYljWyMT2aUmPXRk=",
@@ -501,10 +501,10 @@
 			"revisionTime": "2017-04-30T17:47:35Z"
 		},
 		{
-			"checksumSHA1": "nYlmTivRGZpndWI4wiN4vfpYP5E=",
+			"checksumSHA1": "otr62V2S+hn1IV/v/TIdPTGQpXU=",
 			"path": "github.com/qnib/qframe-types",
-			"revision": "ffd9d3b86826ed922b4fe33ccd797056515518d6",
-			"revisionTime": "2017-05-06T18:09:25Z"
+			"revision": "6dc78dbfe6e44c1e4001005e87e044e711bb184c",
+			"revisionTime": "2017-05-08T11:52:32Z"
 		},
 		{
 			"checksumSHA1": "cXF2ScH6MC6Y3rijJx6usaA1prY=",

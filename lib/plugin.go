@@ -3,6 +3,8 @@ package qframe_handler_influxdb
 import (
 	"fmt"
 	"time"
+	"reflect"
+	"sync"
 	"github.com/zpatrick/go-config"
 	"github.com/influxdata/influxdb/client/v2"
 
@@ -18,6 +20,7 @@ type Plugin struct {
     qtypes.Plugin
 	cli client.Client
 	metricCount int
+	mutex sync.Mutex
 
 }
 
@@ -84,20 +87,19 @@ func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err err
 func (p *Plugin) Run() {
 	p.Log("info", fmt.Sprintf("Start log handler %sv%s", p.Name, version))
 	batchSize := p.CfgIntOr("batch-size", 100)
-	tick := p.CfgIntOr("ticker-sec", 1)
-
+	tick := p.CfgIntOr("ticker-msec", 1000)
 	p.Connect()
 	bg := p.QChan.Data.Join()
+	tc := p.QChan.Tick.Join()
 	inputs := p.GetInputs()
-	//srcSuccess, err := p.Cfg.BoolOr(fmt.Sprintf("handler.%s.source-success", p.Name), true)
-	// Create a new point batch
 	bp := p.NewBatchPoints()
-	tickChan := time.NewTicker(time.Duration(tick)*time.Second).C
-	skipTicker := false
+	p.StartTicker("influxdb", tick)
 	dims := map[string]string{
 		"version": version,
 		"plugin": p.Name,
 	}
+	// Initialise lastTick with time of a year ago
+	lastTick := time.Now().AddDate(0,0,-1)
 	for {
 		select {
 		case val := <-bg.Read:
@@ -115,24 +117,41 @@ func (p *Plugin) Run() {
 				}
 
 				if len(bp.Points()) >= batchSize {
+					now := time.Now()
 					bLen := len(bp.Points())
-					p.Log("debug", fmt.Sprintf("Write batch of %d",bLen))
+					p.Log("debug", fmt.Sprintf("%d >= %d: Write batch",bLen, batchSize))
 					p.metricCount += bLen
 					p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
 					bp = p.WriteBatch(bp)
-					skipTicker = true
+					took := time.Now().Sub(now)
+					p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
+					lastTick = now
 				}
 			}
-		case <- tickChan:
-			if ! skipTicker {
+		case val := <-tc.Read:
+			switch val.(type) {
+			case qtypes.Ticker:
+				tick := val.(qtypes.Ticker)
+				tickDiff, skipTick := tick.SkipTick(lastTick)
+				if skipTick {
+					msg := fmt.Sprintf("tick '%s' | Last tick %s ago (< %s)", tick.Name, tickDiff.String(), tick.Duration.String())
+					p.Log("debug", msg)
+					continue
+				}
+				now := time.Now()
+				lastTick = now
+				// Might take some time
 				bLen := len(bp.Points())
-				p.Log("debug", fmt.Sprintf("Ticker: Write batch of %d",bLen))
+				p.Log("debug", fmt.Sprintf("tick '%s' | Last tick %s ago ([some wiggel room] >= %s) - Write batch of %d", tick.Name, tickDiff.String(), tick.Duration.String(), bLen))
 				p.metricCount += bLen
 				bp = p.WriteBatch(bp)
+				took := time.Now().Sub(now)
 				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
+				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.count", qtypes.Counter, float64(p.metricCount), dims, time.Now(), false))
+				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
+			default:
+				p.Log("debug", fmt.Sprintf("Received Tick of type %s", reflect.TypeOf(val)))
 			}
-			skipTicker = false
-			p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.count", qtypes.Counter, float64(p.metricCount), dims, time.Now(), false))
 		}
 	}
 }

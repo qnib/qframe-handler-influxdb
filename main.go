@@ -26,7 +26,7 @@ func main() {
 		"handler.influxdb.host": "172.17.0.1",
 		"handler.influxdb.inputs": "internal,container-stats",
 		"handler.influxdb.pattern": "%{INT:number}",
-		"handler.influxdb.ticker-sec": "5",
+		"handler.influxdb.ticker-msec": "2000",
 		"handler.influxdb.batch-size": "500",
 		"collector.docker-events.docker-host": "unix:///var/run/docker.sock",
 		"filter.container-stats.inputs": "docker-stats",

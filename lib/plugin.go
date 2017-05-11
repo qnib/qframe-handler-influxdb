@@ -14,6 +14,7 @@ import (
 const (
 	version = "0.1.1"
 	pluginTyp = "handler"
+	pluginPkg = "influxdb"
 )
 
 type Plugin struct {
@@ -27,7 +28,7 @@ type Plugin struct {
 func New(qChan qtypes.QChan, cfg config.Config, name string) (Plugin, error) {
 	var err error
 	p := Plugin{
-		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, name, version),
+		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, pluginPkg, name, version),
 		metricCount: 0,
 	}
 	return p, err

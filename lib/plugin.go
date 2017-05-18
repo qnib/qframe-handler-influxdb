@@ -86,7 +86,7 @@ func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err err
 }
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
-	p.Log("info", fmt.Sprintf("Start log handler %sv%s", p.Name, version))
+	p.Log("info", fmt.Sprintf("Start handler %sv%s", p.Name, version))
 	batchSize := p.CfgIntOr("batch-size", 100)
 	tick := p.CfgIntOr("ticker-msec", 1000)
 	p.Connect()
@@ -136,14 +136,14 @@ func (p *Plugin) Run() {
 				tickDiff, skipTick := tick.SkipTick(lastTick)
 				if skipTick {
 					msg := fmt.Sprintf("tick '%s' | Last tick %s ago (< %s)", tick.Name, tickDiff.String(), tick.Duration.String())
-					p.Log("debug", msg)
+					p.Log("trace", msg)
 					continue
 				}
 				now := time.Now()
 				lastTick = now
 				// Might take some time
 				bLen := len(bp.Points())
-				p.Log("debug", fmt.Sprintf("tick '%s' | Last tick %s ago ([some wiggel room] >= %s) - Write batch of %d", tick.Name, tickDiff.String(), tick.Duration.String(), bLen))
+				p.Log("trace", fmt.Sprintf("tick '%s' | Last tick %s ago ([some wiggel room] >= %s) - Write batch of %d", tick.Name, tickDiff.String(), tick.Duration.String(), bLen))
 				p.metricCount += bLen
 				bp = p.WriteBatch(bp)
 				took := time.Now().Sub(now)
@@ -151,7 +151,7 @@ func (p *Plugin) Run() {
 				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.count", qtypes.Counter, float64(p.metricCount), dims, time.Now(), false))
 				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
 			default:
-				p.Log("debug", fmt.Sprintf("Received Tick of type %s", reflect.TypeOf(val)))
+				p.Log("warn", fmt.Sprintf("Received Tick of type %s", reflect.TypeOf(val)))
 			}
 		}
 	}

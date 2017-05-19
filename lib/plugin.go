@@ -39,7 +39,7 @@ func (p *Plugin) Connect() {
 	host := p.CfgStringOr("host", "localhost")
 	port := p.CfgStringOr("port", "8086")
 	username := p.CfgStringOr("username", "root")
-	password := p.CfgStringOr("passwort", "root")
+	password := p.CfgStringOr("password", "root")
 	addr := fmt.Sprintf("http://%s:%s", host, port)
 	cli := client.HTTPConfig{
 		Addr:     addr,
@@ -95,10 +95,10 @@ func (p *Plugin) Run() {
 	inputs := p.GetInputs()
 	bp := p.NewBatchPoints()
 	p.StartTicker("influxdb", tick)
-	dims := map[string]string{
+	/*dims := map[string]string{
 		"version": version,
 		"plugin": p.Name,
-	}
+	}*/
 	// Initialise lastTick with time of a year ago
 	lastTick := time.Now().AddDate(0,0,-1)
 	for {
@@ -122,10 +122,12 @@ func (p *Plugin) Run() {
 					bLen := len(bp.Points())
 					p.Log("debug", fmt.Sprintf("%d >= %d: Write batch",bLen, batchSize))
 					p.metricCount += bLen
-					p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
+					//p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
 					bp = p.WriteBatch(bp)
 					took := time.Now().Sub(now)
-					p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
+					//p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
+					p.QChan.Data.Send(qtypes.NewStatsdPacket("influxdb.batch.write.ns",  float64(took.Nanoseconds()), "ms"))
+					p.QChan.Data.Send(qtypes.NewStatsdPacket("influxdb.batch.size",  float64(p.metricCount), "c"))
 					lastTick = now
 				}
 			}
@@ -147,9 +149,8 @@ func (p *Plugin) Run() {
 				p.metricCount += bLen
 				bp = p.WriteBatch(bp)
 				took := time.Now().Sub(now)
-				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
-				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.count", qtypes.Counter, float64(p.metricCount), dims, time.Now(), false))
-				p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
+				p.QChan.Data.Send(qtypes.NewStatsdPacket("influxdb.batch.write.ns",  float64(took.Nanoseconds()), "ms"))
+				p.QChan.Data.Send(qtypes.NewStatsdPacket("influxdb.batch.size",  float64(p.metricCount), "c"))
 			default:
 				p.Log("warn", fmt.Sprintf("Received Tick of type %s", reflect.TypeOf(val)))
 			}

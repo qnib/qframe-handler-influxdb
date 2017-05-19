@@ -105,6 +105,31 @@ func (p *Plugin) Run() {
 		select {
 		case val := <-bg.Read:
 			switch val.(type) {
+			case *qtypes.Metric:
+				m := val.(*qtypes.Metric)
+				pt, err := p.MetricsToBatchPoint(m)
+				if err != nil {
+					p.Log("error", fmt.Sprintf("%v", err))
+					continue
+				}
+				bp.AddPoint(pt)
+				if ! m.InputsMatch(inputs) {
+					continue
+				}
+
+				if len(bp.Points()) >= batchSize {
+					now := time.Now()
+					bLen := len(bp.Points())
+					p.Log("debug", fmt.Sprintf("%d >= %d: Write batch",bLen, batchSize))
+					p.metricCount += bLen
+					//p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.size", qtypes.Gauge, float64(bLen), dims, time.Now(), false))
+					bp = p.WriteBatch(bp)
+					took := time.Now().Sub(now)
+					//p.QChan.Data.Send(qtypes.NewExt(p.Name, "influxdb.batch.duration_ns", qtypes.Gauge, float64(took.Nanoseconds()), dims, time.Now(), false))
+					p.QChan.Data.Send(qtypes.NewStatsdPacket("influxdb.batch.write.ns",  float64(took.Nanoseconds()), "ms"))
+					p.QChan.Data.Send(qtypes.NewStatsdPacket("influxdb.batch.size",  float64(p.metricCount), "c"))
+					lastTick = now
+				}
 			case qtypes.Metric:
 				m := val.(qtypes.Metric)
 				pt, err := p.MetricsToBatchPoint(m)

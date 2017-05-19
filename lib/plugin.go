@@ -37,9 +37,9 @@ func New(qChan qtypes.QChan, cfg *config.Config, name string) (Plugin, error) {
 // Connect creates a connection to InfluxDB
 func (p *Plugin) Connect() {
 	host := p.CfgStringOr("host", "localhost")
-	port, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.port", p.Name), "8086")
-	username, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.username", p.Name), "root")
-	password, _ := p.Cfg.StringOr(fmt.Sprintf("handler.%s.password", p.Name), "root")
+	port := p.CfgStringOr("port", "8086")
+	username := p.CfgStringOr("username", "root")
+	password := p.CfgStringOr("passwort", "root")
 	addr := fmt.Sprintf("http://%s:%s", host, port)
 	cli := client.HTTPConfig{
 		Addr:     addr,

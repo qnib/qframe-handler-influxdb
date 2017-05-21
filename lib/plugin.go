@@ -86,7 +86,7 @@ func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err err
 }
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
-	p.Log("info", fmt.Sprintf("Start handler %sv%s", p.Name, version))
+	p.Log("notice", fmt.Sprintf("Start handler %sv%s", p.Name, version))
 	batchSize := p.CfgIntOr("batch-size", 100)
 	tick := p.CfgIntOr("ticker-msec", 1000)
 	p.Connect()

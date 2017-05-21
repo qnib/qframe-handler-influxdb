@@ -107,6 +107,9 @@ func (p *Plugin) Run() {
 			switch val.(type) {
 			case qtypes.Metric:
 				m := val.(qtypes.Metric)
+				if p.StopProcessingMetric(m, false) {
+					continue
+				}
 				pt, err := p.MetricsToBatchPoint(m)
 				if err != nil {
 					p.Log("error", fmt.Sprintf("%v", err))

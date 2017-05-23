@@ -23,6 +23,7 @@ type Plugin struct {
 	cli client.Client
 	metricCount int
 	mutex sync.Mutex
+	SanitizeLabels bool
 
 }
 
@@ -31,6 +32,10 @@ func New(qChan qtypes.QChan, cfg *config.Config, name string) (Plugin, error) {
 	p := Plugin{
 		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, pluginPkg, name, version),
 		metricCount: 0,
+	}
+	p.SanitizeLabels = p.CfgBoolOr("sanitize-labels", false)
+	if p.SanitizeLabels {
+		p.Log("debug", "Replace '.' in container labels with '_' to play nicer with grafana")
 	}
 	return p, err
 }
@@ -83,7 +88,7 @@ func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err err
 		"value": m.Value,
 	}
 	dims := map[string]string{}
-	if p.CfgBoolOr("sanitize-labels", false) {
+	if p.SanitizeLabels {
 		for k,v := range m.Dimensions {
 			dims[strings.Replace(k, ".", "_", -1)] = v
 		}

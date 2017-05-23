@@ -83,8 +83,12 @@ func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err err
 		"value": m.Value,
 	}
 	dims := map[string]string{}
-	for k,v := range m.Dimensions {
-		dims[strings.Replace(k, ".", "_", -1)] = v
+	if p.CfgBoolOr("sanitize-labels", false) {
+		for k,v := range m.Dimensions {
+			dims[strings.Replace(k, ".", "_", -1)] = v
+		}
+	} else {
+		dims = m.Dimensions
 	}
 	pt, err = client.NewPoint(m.Name, dims, fields, m.Time)
 	return

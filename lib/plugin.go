@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/influxdb/client/v2"
 
 	"github.com/qnib/qframe-types"
+	"strings"
 )
 
 const (
@@ -81,9 +82,14 @@ func (p *Plugin) MetricsToBatchPoint(m qtypes.Metric) (pt *client.Point, err err
 	fields := map[string]interface{}{
 		"value": m.Value,
 	}
-	pt, err = client.NewPoint(m.Name, m.Dimensions, fields, m.Time)
+	dims := map[string]string{}
+	for k,v := range m.Dimensions {
+		dims[strings.Replace(k, ".", "_", -1)] = v
+	}
+	pt, err = client.NewPoint(m.Name, dims, fields, m.Time)
 	return
 }
+
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
 	p.Log("notice", fmt.Sprintf("Start handler %sv%s", p.Name, version))

@@ -4,7 +4,6 @@ import (
 	"log"
 	"fmt"
 	"os"
-
 	"github.com/zpatrick/go-config"
 	"github.com/qnib/qframe-types"
 	"github.com/qnib/qframe-handler-influxdb/lib"

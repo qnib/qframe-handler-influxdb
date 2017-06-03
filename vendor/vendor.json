@@ -393,48 +393,6 @@
 			"revisionTime": "2017-05-04T17:08:11Z"
 		},
 		{
-			"checksumSHA1": "jON6hYKx324X52zhxthe6d3oq/s=",
-			"path": "github.com/moby/moby/api/types/swarm",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
-			"checksumSHA1": "KnohfDMrfu2QfOEPFkIub4OWr7A=",
-			"path": "github.com/moby/moby/opts",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
-			"checksumSHA1": "ab2WHnCULYmWJd7N7C0G1YPXPZ8=",
-			"path": "github.com/moby/moby/pkg/archive",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
-			"checksumSHA1": "QYJPvt2BiL65YDsgkFzGHJGkJPA=",
-			"path": "github.com/moby/moby/pkg/fileutils",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
-			"checksumSHA1": "OzPTspQQXtfBgho2+qktVdQMdKU=",
-			"path": "github.com/moby/moby/pkg/homedir",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
-			"checksumSHA1": "idkKUw5CFRz4Cn6NkeImNb3xSzQ=",
-			"path": "github.com/moby/moby/pkg/jsonmessage",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
-			"checksumSHA1": "hRgpdH25YlQjqSLK30OJhG19U6M=",
-			"path": "github.com/moby/moby/pkg/stdcopy",
-			"revision": "2f3f1e6ccd609080b209ab876210491689d77201",
-			"revisionTime": "2017-05-04T16:37:55Z"
-		},
-		{
 			"checksumSHA1": "qj7IAU2RRq99oaIEGH0eLfX/UcM=",
 			"path": "github.com/opencontainers/go-digest",
 			"revision": "aa2ec055abd10d26d539eb630a92241b781ce4bc",
@@ -457,12 +415,6 @@
 			"path": "github.com/pkg/errors",
 			"revision": "ff09b135c25aae272398c51a07235b90a75aa4f0",
 			"revisionTime": "2017-03-16T20:15:38Z"
-		},
-		{
-			"checksumSHA1": "tMJ9i2P4cr8vRhI6DP6o37p575c=",
-			"path": "github.com/qnib/qcollect-ng/types",
-			"revision": "8e090be782d0e38f9bca3b1244e644541e8110a6",
-			"revisionTime": "2017-04-06T19:19:25Z"
 		},
 		{
 			"checksumSHA1": "oXHovqgTOAeXWhqCR8ZK1RD/0/o=",
@@ -501,20 +453,16 @@
 			"revisionTime": "2017-04-30T17:47:35Z"
 		},
 		{
-			"checksumSHA1": "xXZ+OBveOqKAbED7ea49q/vfbjs=",
+			"checksumSHA1": "FQ4BUAqZ9Fpxs/hEU4isEsU8RyI=",
 			"path": "github.com/qnib/qframe-types",
-			"revision": "0b768fd4a5c04c95493aee6a45d1ca3b24d8f812",
-			"revisionTime": "2017-05-14T11:40:28Z"
+			"revision": "02068e7192fa1ecfb0ea53ff0e24f8b01f743436",
+			"revisionTime": "2017-06-03T16:29:20Z"
 		},
 		{
 			"checksumSHA1": "cXF2ScH6MC6Y3rijJx6usaA1prY=",
 			"path": "github.com/qnib/qframe-utils",
 			"revision": "e63cbba7dd91ddc656d6f1a24e25a62ad8454620",
 			"revisionTime": "2017-04-22T14:06:33Z"
-		},
-		{
-			"path": "github.com/qnib/qframe/types",
-			"revision": ""
 		},
 		{
 			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",

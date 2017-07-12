@@ -1,6 +1,8 @@
 # qframe-handler-influxdb
 Influxdb handler for qframe ETL-framework 
 
+**Depreciated!** Moved to [qframe/handler-influxdb](https://github.com/qframe/handler-influxdb)
+
 ## Start DEV environment
 
 The `docker-compose.yml` file expects to find some golang libs, so you better prepare.
